@@ -1,6 +1,6 @@
 library(tidyverse)
 library(geomtextpath)
-
+library(ggimage)
 
 sensory <- tribble(
   ~ attribute,
@@ -12,7 +12,7 @@ sensory <- tribble(
   
   # Aroma
   "Aroma intensity",
-  "Aroma none-High",
+  "Aroma none to high",
   "The overall aroma intensity from none to high",
   "n/a",
   "Aroma",
@@ -158,7 +158,7 @@ sensory <- tribble(
   
   # Flavour
   "Flavour intensity",
-  "Flavour none-High",
+  "Flavour none to high",
   "The overall flavour intensity from none to high",
   "n/a",
   "Flavour",
@@ -176,7 +176,7 @@ sensory <- tribble(
   "Flavour",
   
   "Sweetness",
-  "sweet melon",
+  "Sweet melon",
   "Sweet flavour associated with cooked sweet potato/carrot, sweet melon with caramel notes, confectionary",
   "25 g/L sucrose solution",
   "Flavour",
@@ -194,7 +194,7 @@ sensory <- tribble(
   "Flavour",
   
   "Musty",
-  "stale",
+  "Stale",
   "Flavour of over-ripe rockmelon with skin, stale",
   "~1x2 cm³ cut rock melon piece with skin",
   "Flavour",
@@ -212,6 +212,12 @@ sensory <- tribble(
   "Flavour",
   
   # Aftertaste
+  "Prickly",
+  "Pepperiness",
+  "Tingle or Heat of pepperiness",
+  "n/a",
+  "Aftertaste",
+  
   "Bitter",
   "Lingering",
   "Bitter aftertaste",
@@ -262,6 +268,18 @@ sensory_hierarchy <- sensory |>
     xmid = (xmax + xmin) / 2
   )
 
+center_image <- data.frame(
+  x = 0,  # Center x coordinate
+  y = 0,  # Center y coordinate
+  image = "data/papaya_image.png"  # Replace with actual path
+)
+
+papaya_cols <- c(
+  "Flavour"    = "#D55E00",
+  "Texture"    = "#009E73",
+  "Aroma"      = "#0072B2",
+  "After\ntaste" = "#CC79A7"
+)
 
 
 # Create the visualisation
@@ -279,7 +297,7 @@ sensory_hierarchy |>
   geomtextpath::geom_textpath(
     data = . %>% filter(name == "Level1"),
     aes(y = ymid, label = value, group = value),
-    size = 3.2,
+    size = 3.4,
     spacing = 1.2
   ) +
   # Level 2 text (vertical orientation)
@@ -308,22 +326,18 @@ sensory_hierarchy |>
     angle = 90,
     text_only = TRUE
   ) +
-  scale_alpha_manual(values = c(1, 0.3, 0.1)) +
+  geom_image(
+    data = center_image,inherit.aes = F,
+    aes(x = x, y = y-0.5, image = image),
+    size = 0.1,  # Adjust this value to change image size
+    asp = 1  # Maintains aspect ratio
+  ) +
+  scale_alpha_manual(values = c(0.9, 0.5, 0.2)) +
   scale_fill_manual(
-    values = c(
-      "Aroma" = "#E69F00",
-      "Texture" = "#56B4E9",
-      "Flavour" = "#009E73",
-      "After\ntaste" = "#CC79A7"
-    )
+    values = papaya_cols
   ) +
   scale_colour_manual(
-    values = c(
-      "Aroma" = "#E69F00",
-      "Texture" = "#56B4E9",
-      "Flavour" = "#009E73",
-      "After\ntaste" = "#CC79A7"
-    )
+    values =papaya_cols
   ) +
   scale_y_continuous(limits = c(-0.5, 5.5)) +
   coord_polar() +
@@ -333,27 +347,15 @@ sensory_hierarchy |>
 
 ggsave("plots/papaya_flavour_wheel.png",
        height = 9,
+       width = 9,
+       dpi = 600)
+
+ggsave("plots/papaya_flavour_wheel.jpeg",
+       height = 9,
+       width = 9)
+
+ggsave("plots/papaya_flavour_wheel.tiff",
+       height = 9,
        width = 9)
 
 
-
-# First, load the required additional package
-library(ggimage)
-
-# Assuming your papaya image is stored locally, create a data frame for the image
-# Replace the path with your actual image path
-center_image <- data.frame(
-  x = 0,  # Center x coordinate
-  y = 0,  # Center y coordinate
-  image = "path/to/your/papaya.png"  # Replace with actual path
-)
-
-# In your existing ggplot code, add this layer after your other layers but before theme_void():
-# ... your existing layers ... +
-geom_image(
-  data = center_image,
-  aes(x = x, y = y, image = image),
-  size = 0.15,  # Adjust this value to change image size
-  asp = 1  # Maintains aspect ratio
-) +
-  # ... rest of your code
